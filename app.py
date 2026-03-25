@@ -101,7 +101,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title">🗄️ SQL Query Optimizer 📊</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">SQL Query Optimizer 📊</div>', unsafe_allow_html=True)
 
 # Chat history
 if "messages" not in st.session_state:
