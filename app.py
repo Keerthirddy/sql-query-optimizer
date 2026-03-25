@@ -2,18 +2,17 @@ import streamlit as st
 import os
 from langchain_openrouter import ChatOpenRouter
 
-
+# ✅ Get API key
 api_key = os.getenv("OPENROUTER_API_KEY")
 
 if not api_key:
     api_key = st.secrets["OPENROUTER_API_KEY"]
 
-# Model
+# ✅ Model
 model = ChatOpenRouter(
     model="nvidia/nemotron-3-super-120b-a12b:free",
     temperature=0,
     openai_api_key=api_key
-
 )
 
 # ✅ Detect if input is SQL
@@ -24,9 +23,7 @@ def is_sql_query(text):
 # ✅ SQL Optimizer
 def optimize_sql(user_input):
     prompt = f"""
-    You are a Snowflake SQL expert.
-
-   
+You are a Snowflake SQL expert.
 
 Strict rules:
 - ALWAYS fully optimize the query
@@ -37,57 +34,57 @@ Strict rules:
 - Convert date filters into range conditions
 - Return fully optimized query only
 - Return clean SQL (no comments inside query)
-- Format output clearly
 
-    Your task:
-    1. Optimize query
-    2. Give improvements
-    3. Give Snowflake best practices
+Your task:
+1. Optimize query
+2. Give improvements
+3. Give Snowflake best practices
 
-    Format:
+Format:
 
-    OPTIMIZED_QUERY:
-    <SQL>
+OPTIMIZED_QUERY:
+<SQL>
 
-    IMPROVEMENTS:
-    - points
+IMPROVEMENTS:
+- points
 
-    BEST_PRACTICES:
-    - points
+BEST_PRACTICES:
+- points
 
-    Query:
-    {user_input}
-    """
+Query:
+{user_input}
+"""
 
-   try:
-    response = model.invoke([
-        {"role": "user", "content": prompt}
-    ])
-    return response.content
-except Exception as e:
-    return f"⚠️ Error: {str(e)}"
+    try:
+        response = model.invoke([
+            {"role": "user", "content": prompt}
+        ])
+        return response.content
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"
+
 
 # ✅ Normal Chat Handler
 def normal_chat(user_input):
     prompt = f"""
-    You are a friendly AI assistant.
+You are a friendly AI assistant.
 
-    Respond naturally and helpfully to the user's message.
+Respond naturally and helpfully to the user's message.
 
-    At the end, gently guide them by saying:
-    "I’m designed to optimize SQL queries. Feel free to share one!"
+At the end, gently guide them by saying:
+"I’m designed to optimize SQL queries. Feel free to share one!"
 
-    User message:
-    {user_input}
-    """
+User message:
+{user_input}
+"""
 
     try:
-    response = model.invoke([
-        {"role": "user", "content": prompt}
-    ])
-    return response.content
-except Exception as e:
-    return f"⚠️ Error: {str(e)}"
+        response = model.invoke([
+            {"role": "user", "content": prompt}
+        ])
+        return response.content
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"
 
 
 # ---------------- UI ---------------- #
@@ -95,24 +92,24 @@ except Exception as e:
 st.set_page_config(page_title="SQL Optimizer", layout="wide")
 
 st.markdown("""
-    <style>
-    .stApp {
-        background-color: #F5F7FA;
-    }
+<style>
+.stApp {
+    background-color: #F5F7FA;
+}
 
-    .block-container {
-        padding-top: 2rem;
-    }
+.block-container {
+    padding-top: 2rem;
+}
 
-    .title {
-        text-align: center;
-        font-size: 26px;
-        font-weight: 600;
-        margin-top: 0px;
-        margin-bottom: 10px;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    </style>
+.title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 600;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    font-family: 'Segoe UI', sans-serif;
+}
+</style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">SQL Query Optimizer 📊</div>', unsafe_allow_html=True)
@@ -133,13 +130,15 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     with st.chat_message("user"):
-        st.markdown(f"\n{user_input}\n")
+        if is_sql_query(user_input):
+            st.code(user_input, language="sql")
+        else:
+            st.markdown(user_input)
 
-    # ✅ Decide flow
+    # Decide flow
     if is_sql_query(user_input):
         response = optimize_sql(user_input)
 
-        # Split response
         optimized = ""
         improvements = ""
         best = ""
@@ -158,7 +157,7 @@ if user_input:
                         best = sub[1]
 
         with st.chat_message("assistant"):
-            st.markdown("⚡ Optimized Query")
+            st.markdown("### ⚡ Optimized Query")
             st.code(optimized.strip(), language="sql")
 
             st.markdown("### 🔧 Improvements")
