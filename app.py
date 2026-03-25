@@ -12,7 +12,7 @@ if not api_key:
 model = ChatOpenRouter(
     model="nvidia/nemotron-3-super-120b-a12b:free",
     temperature=0,
-    openai_api_key=api_key
+    
 )
 
 # ✅ Detect if input is SQL
