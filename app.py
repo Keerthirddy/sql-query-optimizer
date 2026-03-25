@@ -5,15 +5,15 @@ from langchain_openrouter import ChatOpenRouter
 # ✅ Get API key
 api_key = os.getenv("OPENROUTER_API_KEY")
 
-
 if not api_key:
     api_key = st.secrets["OPENROUTER_API_KEY"]
+
 os.environ["OPENROUTER_API_KEY"] = api_key
+
 # ✅ Model
 model = ChatOpenRouter(
     model="nvidia/nemotron-3-super-120b-a12b:free",
-    temperature=0,
-    
+    temperature=0
 )
 
 # ✅ Detect if input is SQL
@@ -28,20 +28,12 @@ You are a Snowflake SQL expert.
 
 Strict rules:
 - ALWAYS fully optimize the query
-- NEVER keep functions on columns in WHERE (YEAR, EXTRACT, UPPER, etc.)
-- ALWAYS remove subqueries and replace with JOIN when possible
-- NEVER use SELECT * or table.*
-- Avoid leading wildcards like '%text'
-- Convert date filters into range conditions
-- Return fully optimized query only
-- Return clean SQL (no comments inside query)
+- NEVER keep functions on columns in WHERE
+- ALWAYS remove subqueries using JOIN
+- NEVER use SELECT *
+- Convert date filters into ranges
 
-Your task:
-1. Optimize query
-2. Give improvements
-3. Give Snowflake best practices
-
-Format:
+ALWAYS follow EXACT format:
 
 OPTIMIZED_QUERY:
 <SQL>
@@ -65,17 +57,17 @@ Query:
         return f"⚠️ Error: {str(e)}"
 
 
-# ✅ Normal Chat Handler
+# ✅ Normal Chat
 def normal_chat(user_input):
     prompt = f"""
-You are a friendly AI assistant.
+You are a friendly assistant.
 
-Respond naturally and helpfully to the user's message.
+Respond normally.
 
-At the end, gently guide them by saying:
+At the end say:
 "I’m designed to optimize SQL queries. Feel free to share one!"
 
-User message:
+User:
 {user_input}
 """
 
@@ -97,29 +89,25 @@ st.markdown("""
 .stApp {
     background-color: #F5F7FA;
 }
-
 .block-container {
     padding-top: 2rem;
 }
-
 .title {
     text-align: center;
     font-size: 26px;
     font-weight: 600;
-    margin-top: 0px;
     margin-bottom: 10px;
-    font-family: 'Segoe UI', sans-serif;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title">SQL Query Optimizer 📊</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">🗄️ SQL Query Optimizer 📊</div>', unsafe_allow_html=True)
 
 # Chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display messages
+# Show history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
@@ -136,10 +124,10 @@ if user_input:
         else:
             st.markdown(user_input)
 
-    # Decide flow
     if is_sql_query(user_input):
         response = optimize_sql(user_input)
 
+        # 🔥 SAFE PARSING
         optimized = ""
         improvements = ""
         best = ""
@@ -148,24 +136,40 @@ if user_input:
             parts = response.split("OPTIMIZED_QUERY:")
             if len(parts) > 1:
                 rest = parts[1]
-                sections = rest.split("IMPROVEMENTS:")
-                optimized = sections[0]
 
-                if len(sections) > 1:
-                    sub = sections[1].split("BEST_PRACTICES:")
-                    improvements = sub[0]
-                    if len(sub) > 1:
-                        best = sub[1]
+                if "IMPROVEMENTS:" in rest:
+                    sections = rest.split("IMPROVEMENTS:")
+                    optimized = sections[0]
 
+                    if len(sections) > 1:
+                        sub = sections[1]
+
+                        if "BEST_PRACTICES:" in sub:
+                            sub_parts = sub.split("BEST_PRACTICES:")
+                            improvements = sub_parts[0]
+                            if len(sub_parts) > 1:
+                                best = sub_parts[1]
+                        else:
+                            improvements = sub
+                else:
+                    optimized = rest
+
+        # 🔥 DISPLAY
         with st.chat_message("assistant"):
-            st.markdown("### ⚡ Optimized Query")
-            st.code(optimized.strip(), language="sql")
 
-            st.markdown("### 🔧 Improvements")
-            st.markdown(improvements.strip())
+            if optimized.strip():
+                st.markdown("### ⚡ Optimized Query")
+                st.code(optimized.strip(), language="sql")
+            else:
+                st.markdown(response)  # fallback
 
-            st.markdown("### ❄️ Snowflake Best Practices")
-            st.markdown(best.strip())
+            if improvements.strip():
+                st.markdown("### 🔧 Improvements")
+                st.markdown(improvements.strip())
+
+            if best.strip():
+                st.markdown("### ❄️ Snowflake Best Practices")
+                st.markdown(best.strip())
 
     else:
         response = normal_chat(user_input)
