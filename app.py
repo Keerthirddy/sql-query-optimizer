@@ -1,15 +1,19 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
 from langchain_openrouter import ChatOpenRouter
 
-load_dotenv()
+
+api_key = os.getenv("OPENROUTER_API_KEY")
+
+if not api_key:
+    api_key = st.secrets["OPENROUTER_API_KEY"]
 
 # Model
 model = ChatOpenRouter(
     model="openai/gpt-4o-mini",
     temperature=0,
-    openai_api_key=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
+    openai_api_key=api_key
+
 )
 
 # ✅ Detect if input is SQL
