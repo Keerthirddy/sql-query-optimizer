@@ -59,8 +59,13 @@ Strict rules:
     {user_input}
     """
 
-    response = model.invoke(prompt)
+   try:
+    response = model.invoke([
+        {"role": "user", "content": prompt}
+    ])
     return response.content
+except Exception as e:
+    return f"⚠️ Error: {str(e)}"
 
 # ✅ Normal Chat Handler
 def normal_chat(user_input):
@@ -76,8 +81,13 @@ def normal_chat(user_input):
     {user_input}
     """
 
-    response = model.invoke(prompt)
+    try:
+    response = model.invoke([
+        {"role": "user", "content": prompt}
+    ])
     return response.content
+except Exception as e:
+    return f"⚠️ Error: {str(e)}"
 
 
 # ---------------- UI ---------------- #
