@@ -9,6 +9,7 @@ load_dotenv()
 model = ChatOpenRouter(
     model="openai/gpt-4o-mini",
     temperature=0
+    openai_api_key=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
 )
 
 # ✅ Detect if input is SQL
