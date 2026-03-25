@@ -4,11 +4,11 @@ from langchain_openrouter import ChatOpenRouter
 
 # ✅ Get API key
 api_key = os.getenv("OPENROUTER_API_KEY")
-os.environ["OPENROUTER_API_KEY"] = api_key
+
 
 if not api_key:
     api_key = st.secrets["OPENROUTER_API_KEY"]
-
+os.environ["OPENROUTER_API_KEY"] = api_key
 # ✅ Model
 model = ChatOpenRouter(
     model="nvidia/nemotron-3-super-120b-a12b:free",
