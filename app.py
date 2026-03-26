@@ -87,7 +87,7 @@ st.set_page_config(page_title="SQL Optimizer", layout="wide")
 st.markdown("""
 <style>
 .stApp {
-    background-color: #000000;
+    background-color: #FFFF7;
 }
 .block-container {
     padding-top: 2rem;
