@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from langchain_openrouter import ChatOpenRouter
 
-# ✅ Get API key
+#  API key
 api_key = os.getenv("OPENROUTER_API_KEY")
 
 if not api_key:
@@ -10,18 +10,18 @@ if not api_key:
 
 os.environ["OPENROUTER_API_KEY"] = api_key
 
-# ✅ Model
+#  Model
 model = ChatOpenRouter(
     model="nvidia/nemotron-3-super-120b-a12b:free",
     temperature=0
 )
 
-# ✅ Detect if input is SQL
+# Detect if input is SQL
 def is_sql_query(text):
     keywords = ["select", "insert", "update", "delete", "create", "with"]
     return any(word in text.lower() for word in keywords)
 
-# ✅ SQL Optimizer
+#  SQL Optimizer
 def optimize_sql(user_input):
     prompt = f"""
 You are a Snowflake SQL expert.
@@ -54,10 +54,10 @@ Query:
         ])
         return response.content
     except Exception as e:
-        return f"⚠️ Error: {str(e)}"
+        return f" Error: {str(e)}"
 
 
-# ✅ Normal Chat
+# Normal Chat
 def normal_chat(user_input):
     prompt = f"""
 You are a friendly assistant.
@@ -77,7 +77,7 @@ User:
         ])
         return response.content
     except Exception as e:
-        return f"⚠️ Error: {str(e)}"
+        return f" Error: {str(e)}"
 
 
 # ---------------- UI ---------------- #
@@ -127,7 +127,7 @@ if user_input:
     if is_sql_query(user_input):
         response = optimize_sql(user_input)
 
-        # 🔥 SAFE PARSING
+        # SAFE PARSING
         optimized = ""
         improvements = ""
         best = ""
@@ -154,7 +154,7 @@ if user_input:
                 else:
                     optimized = rest
 
-        # 🔥 DISPLAY
+        # DISPLAY
         with st.chat_message("assistant"):
 
             if optimized.strip():
